@@ -34,13 +34,25 @@ install_prerequisites () {
     # pipx install ansible-core==2.12.3 # Selected version
   fi
 
+  if command -v pre-commit >/dev/null 2>&1
+  then
+    echo -e "pre-commit already present. \t Installation skipped..."
+  else
+    # Documentation: https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
+    echo "Installing the latest pre-commit version for MacOS via pipx..." && \
+    # Old install: brew install pre-commit
+    pipx install --include-deps pre-commit # Full
+    pre-commit install
+    pre-commit run --all-files
+  fi
+
   if command -v molecule >/dev/null 2>&1
   then
     echo -e "molecule already present. \t Installation skipped..."
   else
     # Documentation: https://blog.stephane-robert.info/post/ansible-molecule/
     echo "Installing the latest molecule version for MacOS via pipx..." && \
-    # Old install : python3 -m pip install molecule molecule-plugins ansible-core ansible-lint --user
+    # Old install: python3 -m pip install molecule molecule-plugins ansible-core ansible-lint --user
     pipx install molecule molecule-plugins ansible-core ansible-lint
     # molecule init role --driver-name docker --verifier-name ansible dadideo.monrole
   fi

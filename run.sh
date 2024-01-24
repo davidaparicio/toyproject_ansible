@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-# ansible-lint --write all playbook.yaml # Format the playbook file
+# ansible-lint --fix playbook.yaml # Format the playbook file --write all
 ansible-lint playbook.yml
 # ansible-lint -t idempotency playbook.yml # Include (only)
 # ansible-lint -x formatting,metadata playbook.yml # Exclude

@@ -1,0 +1,42 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+        args: [--maxkb=200] # (default=500kB)
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-executables-have-shebangs
+      # - id: detect-aws-credentials
+      - id: check-yaml
+      - id: debug-statements
+      - id: requirements-txt-fixer
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.7 # Update me!
+    hooks:
+      - id: bandit
+        name: security check for python (bandit)
+        description: Bandit is a tool for finding common security issues in Python code
+  # args: ["-c", "pyproject.toml"]
+  # additional_dependencies: ["bandit[toml]"]
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v6.22.2 # Update me!
+    hooks:
+      - id: ansible-lint
+        name: Ansible-lint
+        description: This hook runs ansible-lint.
+        entry: python3 -m ansiblelint -v --force-color
+        language: python
+        # do not pass files to ansible-lint, see:
+        # https://github.com/ansible/ansible-lint/issues/611
+        pass_filenames: false
+        always_run: true
+        additional_dependencies:
+          # https://github.com/pre-commit/pre-commit/issues/1526
+          # If you want to use specific version of ansible-core or ansible, feel
+          # free to override `additional_dependencies` in your own hook config
+          # file.
+          - ansible-core>=2.13.3
