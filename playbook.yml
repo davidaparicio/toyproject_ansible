@@ -50,13 +50,13 @@
 
     - name: Check the data loss for DBs
       ansible.builtin.shell:
-        cmd: "{{ base_folder }}/hdfs_merged_dbs.py --workflow {{ workflow }} {{ cleaning_mode }} {{ verbose_mode }}"
+        cmd: "{{ base_folder }}/print.py --workflow {{ workflow }} {{ cleaning_mode }} {{ verbose_mode }}"
       args:
-        executable: /usr/bin/python3
+        executable: /Users/daparici/homebrew/bin/python3
       register: python_result
       changed_when: python_result.rc != 0
 
-    - name: Get stdout or stderr from the output
+    - name: Get stdout/stderr from the output
       ansible.builtin.debug:
         msg: "{{ python_result.stdout }}"
-      when: python_result is defined and python_result != ''
+      when: python_result is defined and python_result.stdout != ''
