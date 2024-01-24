@@ -11,8 +11,7 @@
     continent: moon
     workflow: "{{ database }}_{{ environments }}_{{ continent }}"
     foundry_user: "{{ environments }}_foundry"
-    base_folder: "/opt/{{ foundry_user }}/data-ingest-conf/scripts/restart/"
-    log_file: "/var/log/{{ foundry_user }}/{{ workflow }}.log"
+    base_folder: "/opt/{{ foundry_user }}/data-ingest-conf/scripts/restart"
     python_bin: "/usr/bin/python3"
   tasks:
     - name: Init --verbose # Set the variable conditionally
@@ -55,7 +54,7 @@
       # https://blog.stephane-robert.info/post/ansible-module-shell-command/
       # https://ansible.readthedocs.io/projects/lint/rules/command-instead-of-shell/
       ansible.builtin.command:
-        cmd: "{{ python_bin }} {{ base_folder }}/hdfs_merged_dbs.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}>> {{ log_file }} 2>&1"
+        cmd: "{{ python_bin }} {{ base_folder }}/hdfs_merged_dbs.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}"
       # https://docs.ansible.com/ansible-core/2.16/playbook_guide/playbooks_privilege_escalation.html#risks-of-becoming-an-unprivileged-user
       become: true
       become_user: "{{ foundry_user }}"
@@ -63,7 +62,13 @@
       changed_when: check_result.rc == 0
       failed_when: check_result.rc != 0
 
-    - name: Debug, get stdout/stderr from the output
+    - name: Debug, get stdout from the output
+      # Real-time logs: https://github.com/ansible/ansible/issues/3887#issuecomment-54672569
       ansible.builtin.debug:
         msg: "{{ check_result.stdout }}"
       when: ansible_verbosity > 1 and check_result is defined and check_result.stdout != ''
+
+    - name: Debug, get stderr from the output
+      ansible.builtin.debug:
+        msg: "{{ check_result.stderr }}"
+      when: ansible_verbosity > 1 and check_result is defined and check_result.stderr != ''
