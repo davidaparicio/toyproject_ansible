@@ -11,8 +11,9 @@
     continent: moon
     workflow: "{{ database }}_{{ environments }}_{{ continent }}"
     foundry_user: "{{ environments }}_foundry"
-    base_folder: "/Users/daparici/code/local/toyproject_ansible"
-    python_bin: "/Users/daparici/homebrew/bin/python3" # /Users/daparici/homebrew/bin/python3.11
+    base_folder: "/opt/{{ foundry_user }}/data-ingest-conf/scripts/restart/"
+    log_file: "/var/log/{{ foundry_user }}/{{ workflow }}.log"
+    python_bin: "/usr/bin/python3"
   tasks:
     - name: Init --verbose # Set the variable conditionally
       ansible.builtin.set_fact:
@@ -50,11 +51,12 @@
                       sort }}"
       when: ansible_verbosity > 0
 
-    - name: "Check the data loss for DBs, as {{ foundry_user }}"
+    - name: "Check the data loss for DBs, restart CDC workflow as {{ foundry_user }}"
       # https://blog.stephane-robert.info/post/ansible-module-shell-command/
       # https://ansible.readthedocs.io/projects/lint/rules/command-instead-of-shell/
       ansible.builtin.command:
-        cmd: "{{ python_bin }} {{ base_folder }}/print.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}"
+        cmd: "{{ python_bin }} {{ base_folder }}/hdfs_merged_dbs.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}>> {{ log_file }} 2>&1"
+      # https://docs.ansible.com/ansible-core/2.16/playbook_guide/playbooks_privilege_escalation.html#risks-of-becoming-an-unprivileged-user
       become: true
       become_user: "{{ foundry_user }}"
       register: check_result
@@ -65,18 +67,3 @@
       ansible.builtin.debug:
         msg: "{{ check_result.stdout }}"
       when: ansible_verbosity > 1 and check_result is defined and check_result.stdout != ''
-
-    - name: "Run the Spark submit command, as {{ foundry_user }}"
-      ansible.builtin.command:
-        cmd: "{{ python_bin }} {{ base_folder }}/print.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}"
-      # https://docs.ansible.com/ansible-core/2.16/playbook_guide/playbooks_privilege_escalation.html#risks-of-becoming-an-unprivileged-user
-      become: true
-      become_user: "{{ foundry_user }}"
-      register: spark_result
-      changed_when: spark_result.rc == 0
-      failed_when: spark_result.rc != 0
-
-    - name: Debug, get stdout/stderr from the output
-      ansible.builtin.debug:
-        msg: "{{ spark_result.stdout }}"
-      when: ansible_verbosity > 1 and spark_result is defined and spark_result.stdout != ''
