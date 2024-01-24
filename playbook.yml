@@ -1,14 +1,25 @@
 ---
 - name: HelloWorld playbook
   hosts: all
+  gather_facts: false
   vars:
-    cleaning: false
+    # Default parameters, they MUST be overwrite, in order to work
     verbose: false
+    cleaning: false
     database: testMerged_Dbs
     environments: testing
     continent: moon
     workflow: "{{ database }}_{{ environments }}_{{ continent }}"
+    base_folder: "/Users/daparici/code/local/toy_ansible"
   tasks:
+    - name: Verbose - Set the variable conditionally
+      ansible.builtin.set_fact:
+        verbose_mode: "{{ '--verbose' if verbose else '' }}"
+
+    - name: Verbose - Set the variable conditionally
+      ansible.builtin.set_fact:
+        cleaning_mode: "{{ '--cleaning' if cleaning else '' }}"
+
     - name: Print variables
       ansible.builtin.debug:
         msg: |-
@@ -35,12 +46,17 @@
                       reject('match', '^_.*$') |
                       list |
                       sort }}"
-    - name: Print variables2
-      ansible.builtin.pause:
-        seconds: 1
-        prompt: |
-          =========================
-            line_1
-            {{ lookup('pipe', 'echo "line_2 with \t tab \n  line_3 "') }}
-            line_4
-          =========================
+      when: ansible_verbosity > 0
+
+    - name: Check the data loss for DBs
+      ansible.builtin.shell:
+        cmd: "{{ base_folder }}/hdfs_merged_dbs.py --workflow {{ workflow }} {{ cleaning_mode }} {{ verbose_mode }}"
+      args:
+        executable: /usr/bin/python3
+      register: python_result
+      changed_when: python_result.rc != 0
+
+    - name: Get stdout or stderr from the output
+      ansible.builtin.debug:
+        msg: "{{ python_result.stdout }}"
+      when: python_result is defined and python_result != ''
