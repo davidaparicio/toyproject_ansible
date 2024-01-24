@@ -13,6 +13,7 @@ def printVars(*args, **kwargs):
 if __name__ == "__main__":
     args = sys.argv
     python_executable_path = os.environ["_"]
+    print(f"user={os.getlogin()}|uid={os.getuid()}")
     print(f"python={python_executable_path}")
     print(f"file={args[0]}")
     # args[0] = current file

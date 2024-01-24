@@ -2,14 +2,17 @@
 - name: HelloWorld playbook
   hosts: all
   gather_facts: false
+  # become: true
+  # become_method: enable
   vars:
     # Default parameters, they MUST be overwrite, in order to work
     verbose: false
     cleaning: false
     database: testMerged_Dbs
-    environments: testing
+    environments: testing # environment is used by Ansible
     continent: moon
     workflow: "{{ database }}_{{ environments }}_{{ continent }}"
+    foundry_user: "{{ environments }}_foundry"
     base_folder: "/Users/daparici/code/local/toyproject_ansible"
     python_bin: "/Users/daparici/homebrew/bin/python3" # /Users/daparici/homebrew/bin/python3.11
   tasks:
@@ -49,11 +52,15 @@
                       sort }}"
       when: ansible_verbosity > 0
 
-    - name: Check the data loss for DBs
+    - name: "Check the data loss for DBs, as {{ foundry_user }}"
       # https://blog.stephane-robert.info/post/ansible-module-shell-command/
       # https://ansible.readthedocs.io/projects/lint/rules/command-instead-of-shell/
       ansible.builtin.command:
         cmd: "{{ python_bin }} {{ base_folder }}/print.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}"
+      # remote_user: admin
+      become: true
+      become_method: ansible.builtin.sudo
+      become_user: "{{ foundry_user }}"
       register: python_result
       changed_when: python_result.rc == 0
       failed_when: python_result.rc != 0
