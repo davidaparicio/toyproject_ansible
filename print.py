@@ -2,15 +2,17 @@
 import os
 import sys
 
+
 def printVars(*args, **kwargs):
     print("positional arguments")
     print(args)
     print("keyword arguments/splat args (empty when run as script)")
     print(kwargs)
 
+
 if __name__ == "__main__":
     args = sys.argv
-    python_executable_path = os.environ['_']
+    python_executable_path = os.environ["_"]
     print(f"python={python_executable_path}")
     print(f"file={args[0]}")
     # args[0] = current file

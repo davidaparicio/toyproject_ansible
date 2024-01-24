@@ -10,7 +10,7 @@
     environments: testing
     continent: moon
     workflow: "{{ database }}_{{ environments }}_{{ continent }}"
-    base_folder: "/Users/daparici/code/local/toy_ansible"
+    base_folder: "/Users/daparici/code/local/toyproject_ansible"
     python_bin: "/Users/daparici/homebrew/bin/python3" # /Users/daparici/homebrew/bin/python3.11
   tasks:
     - name: Init --verbose # Set the variable conditionally
