@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+import pwd
 
 
 def printVars(*args, **kwargs):
@@ -10,11 +11,18 @@ def printVars(*args, **kwargs):
     print(kwargs)
 
 
+# UNIX correct username with Ansible become https://stackoverflow.com/a/2899055
+def get_username():
+    return pwd.getpwuid(os.getuid())[0]
+
+
 if __name__ == "__main__":
     args = sys.argv
-    python_executable_path = os.environ["_"]
-    print(f"user={os.getlogin()}|uid={os.getuid()}")
-    print(f"python={python_executable_path}")
+    user = get_username()
+    print(f"user={user}|uid={os.getuid()}")
+    # Not working with Ansible become
+    # python_executable_path = os.environ["_"]
+    print(f"python={sys.executable}")
     print(f"file={args[0]}")
     # args[0] = current file
     # args[1:] = function args : (*unpacked)

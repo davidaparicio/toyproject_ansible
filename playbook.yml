@@ -1,9 +1,7 @@
 ---
-- name: HelloWorld playbook
+- name: Check and Restart
   hosts: all
   gather_facts: false
-  # become: true
-  # become_method: enable
   vars:
     # Default parameters, they MUST be overwrite, in order to work
     verbose: false
@@ -57,15 +55,28 @@
       # https://ansible.readthedocs.io/projects/lint/rules/command-instead-of-shell/
       ansible.builtin.command:
         cmd: "{{ python_bin }} {{ base_folder }}/print.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}"
-      # remote_user: admin
       become: true
-      become_method: ansible.builtin.sudo
       become_user: "{{ foundry_user }}"
-      register: python_result
-      changed_when: python_result.rc == 0
-      failed_when: python_result.rc != 0
+      register: check_result
+      changed_when: check_result.rc == 0
+      failed_when: check_result.rc != 0
 
-    - name: Get stdout/stderr from the output
+    - name: Debug, get stdout/stderr from the output
       ansible.builtin.debug:
-        msg: "{{ python_result.stdout }}"
-      when: python_result is defined and python_result.stdout != ''
+        msg: "{{ check_result.stdout }}"
+      when: ansible_verbosity > 1 and check_result is defined and check_result.stdout != ''
+
+    - name: "Run the Spark submit command, as {{ foundry_user }}"
+      ansible.builtin.command:
+        cmd: "{{ python_bin }} {{ base_folder }}/print.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}"
+      # https://docs.ansible.com/ansible-core/2.16/playbook_guide/playbooks_privilege_escalation.html#risks-of-becoming-an-unprivileged-user
+      become: true
+      become_user: "{{ foundry_user }}"
+      register: spark_result
+      changed_when: spark_result.rc == 0
+      failed_when: spark_result.rc != 0
+
+    - name: Debug, get stdout/stderr from the output
+      ansible.builtin.debug:
+        msg: "{{ spark_result.stdout }}"
+      when: ansible_verbosity > 1 and spark_result is defined and spark_result.stdout != ''
