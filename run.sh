@@ -6,7 +6,15 @@ set -euo pipefail
 ansible-lint playbook.yml
 # ansible-lint -t idempotency playbook.yml # Include (only)
 # ansible-lint -x formatting,metadata playbook.yml # Exclude
+
+# https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html
+# https://docs.ansible.com/ansible/2.8/user_guide/playbooks_checkmode.html
 ansible-playbook -i inventory playbook.yml --check
+
+color() {
+  printf '\033[%sm%s\033[m\n' "$@"
+}
+
 echo ""
 echo "Launch the Ansible playbook?"
 echo ""
@@ -16,5 +24,4 @@ select yn in "Yes" "No"; do
     No ) color '32;4' "Exiting..."; exit;;
     * ) echo "Invalid response";
   esac
-# https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_checkmode.html
-# https://docs.ansible.com/ansible/2.8/user_guide/playbooks_checkmode.html
+done

@@ -2,9 +2,45 @@
 - name: HelloWorld playbook
   hosts: all
   vars:
-    username: sammy
-    home: /home/sammy
+    cleaning: false
+    verbose: false
+    database: testMerged_Dbs
+    environments: testing
+    continent: moon
+    workflow: "{{ database }}_{{ environments }}_{{ continent }}"
   tasks:
     - name: Print variables
       ansible.builtin.debug:
-        msg: "Username: {{ username }}, Home dir: {{ home }}"
+        msg: |-
+          {% for k in _my_vars %}
+          {{ k }}: {{ lookup('vars', k) }}
+          {% endfor %}
+      vars:
+        _special_vars:
+          - ansible_dependent_role_names
+          - ansible_play_batch
+          - ansible_play_hosts
+          - ansible_play_hosts_all
+          - ansible_play_name
+          - ansible_play_role_names
+          - ansible_role_names
+          - environment
+          - hostvars
+          - play_hosts
+          - role_names
+        _hostvars: "{{ hostvars[inventory_hostname].keys() }}"
+        _my_vars: "{{ vars.keys() |
+                      difference(_hostvars) |
+                      difference(_special_vars) |
+                      reject('match', '^_.*$') |
+                      list |
+                      sort }}"
+    - name: Print variables2
+      ansible.builtin.pause:
+        seconds: 1
+        prompt: |
+          =========================
+            line_1
+            {{ lookup('pipe', 'echo "line_2 with \t tab \n  line_3 "') }}
+            line_4
+          =========================
