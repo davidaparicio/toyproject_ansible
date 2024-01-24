@@ -1,0 +1,10 @@
+---
+- name: HelloWorld playbook
+  hosts: all
+  vars:
+    username: sammy
+    home: /home/sammy
+  tasks:
+    - name: Print variables
+      ansible.builtin.debug:
+        msg: "Username: {{ username }}, Home dir: {{ home }}"
