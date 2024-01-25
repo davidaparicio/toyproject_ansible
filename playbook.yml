@@ -7,10 +7,10 @@
     verbose: false
     cleaning: false
     database: testMerged_Dbs
-    environments: testing # environment is used by Ansible
+    region: testing
     continent: moon
-    workflow: "{{ database }}_{{ environments }}_{{ continent }}"
-    foundry_user: "{{ environments }}_foundry"
+    workflow: "{{ database }}_{{ region }}_{{ continent }}"
+    foundry_user: "{{ region }}_foundry"
     base_folder: "/opt/{{ foundry_user }}/data-ingest-conf/scripts/restart"
     python_bin: "/usr/bin/python3"
   tasks:
@@ -54,7 +54,7 @@
       # https://blog.stephane-robert.info/post/ansible-module-shell-command/
       # https://ansible.readthedocs.io/projects/lint/rules/command-instead-of-shell/
       ansible.builtin.command:
-        cmd: "{{ python_bin }} {{ base_folder }}/hdfs_merged_dbs.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}"
+        cmd: "{{ python_bin }} {{ base_folder }}/run_ingest_spark3.py --workflow {{ workflow }}{{ cleaning_mode }}{{ verbose_mode }}"
       # https://docs.ansible.com/ansible-core/2.16/playbook_guide/playbooks_privilege_escalation.html#risks-of-becoming-an-unprivileged-user
       become: true
       become_user: "{{ foundry_user }}"
